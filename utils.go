@@ -1,8 +1,8 @@
 /*
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:02:45
- * @LastEditors: Vincent Yang
- * @LastEditTime: 2024-09-30 02:23:42
+ * @LastEditors: Vincent Young
+ * @LastEditTime: 2024-09-30 10:25:45
  * @FilePath: /follow-claim/utils.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -65,4 +66,23 @@ func sendToBark(message string, barkURL string, barkEnable bool) {
 	}
 
 	fmt.Printf("Successfully sent notification: %s\n", message)
+}
+
+func parseTime(timeStr string) (hour, minute string, err error) {
+	parts := strings.Split(timeStr, ":")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("time should be in HH:MM format")
+	}
+
+	h, err := strconv.Atoi(parts[0])
+	if err != nil || h < 0 || h > 23 {
+		return "", "", fmt.Errorf("invalid hour")
+	}
+
+	m, err := strconv.Atoi(parts[1])
+	if err != nil || m < 0 || m > 59 {
+		return "", "", fmt.Errorf("invalid minute")
+	}
+
+	return fmt.Sprintf("%02d", h), fmt.Sprintf("%02d", m), nil
 }

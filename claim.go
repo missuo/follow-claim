@@ -1,8 +1,8 @@
 /*
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:01:59
- * @LastEditors: Vincent Yang
- * @LastEditTime: 2024-09-30 02:31:26
+ * @LastEditors: Vincent Young
+ * @LastEditTime: 2024-09-30 10:25:36
  * @FilePath: /follow-claim/claim.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -69,23 +69,33 @@ func signFollow(cookie string, barkURL string, barkEnable bool) string {
 func main() {
 	cookie := os.Getenv("COOKIE")
 	barkURL := os.Getenv("BARK_URL")
+	scheduledTime := os.Getenv("SCHEDULED_TIME")
+
 	if cookie == "" {
 		log.Fatal("COOKIE must be set in environment variables")
 	}
-	barkEnable := true
-	if barkURL == "" {
-		barkEnable = false
+
+	if scheduledTime == "" {
+		scheduledTime = "00:05"
 	}
+
+	hour, minute, err := parseTime(scheduledTime)
+	if err != nil {
+		log.Fatalf("Invalid SCHEDULED_TIME format: %v", err)
+	}
+
+	barkEnable := barkURL != ""
+
 	c := cron.New(cron.WithLocation(time.UTC))
-	_, err := c.AddFunc("0 0 * * *", func() {
+	_, err = c.AddFunc(fmt.Sprintf("%s %s * * *", minute, hour), func() {
 		result := signFollow(cookie, barkURL, barkEnable)
 		fmt.Println(result)
 	})
 	if err != nil {
 		log.Fatal("Error scheduling task: ", err)
 	}
-	c.Start()
 
-	fmt.Println("Scheduler started. Will run daily at 8:00 PM.")
+	c.Start()
+	fmt.Printf("Scheduler started. Will run daily at %s:%s UTC.\n", hour, minute)
 	select {}
 }

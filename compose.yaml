@@ -6,3 +6,4 @@ services:
     environment:
       - COOKIE=
       - BARK_URL=
+      - SCHEDULED_TIME=
