@@ -6,7 +6,7 @@ Follow Claim is a simple tool that uses a cron job to claim daily rewards from t
 
 ### Docker
 ```bash
-docker run -d --name follow-claim -e COOKIE="your cookie" -e BARK_URL="your bark url" missuo/follow-claim
+docker run -d --name follow-claim -e COOKIE="your cookie" -e BARK_URL="your bark url" -e SCHEDULED_TIME="00:05" missuo/follow-claim
 ```
 
 ### Docker Compose
@@ -25,6 +25,8 @@ services:
     environment:
       - COOKIE=
       - BARK_URL=
+      # Use UTC Time
+      - SCHEDULED_TIME=00:05
 ```
 
 ```bash
