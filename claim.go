@@ -2,7 +2,7 @@
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:01:59
  * @LastEditors: Vincent Yang
- * @LastEditTime: 2024-09-30 02:24:17
+ * @LastEditTime: 2024-09-30 02:31:26
  * @FilePath: /follow-claim/claim.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -19,6 +19,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 func signFollow(cookie string, barkURL string, barkEnable bool) string {
@@ -73,7 +76,16 @@ func main() {
 	if barkURL == "" {
 		barkEnable = false
 	}
+	c := cron.New(cron.WithLocation(time.UTC))
+	_, err := c.AddFunc("0 0 * * *", func() {
+		result := signFollow(cookie, barkURL, barkEnable)
+		fmt.Println(result)
+	})
+	if err != nil {
+		log.Fatal("Error scheduling task: ", err)
+	}
+	c.Start()
 
-	result := signFollow(cookie, barkURL, barkEnable)
-	fmt.Println(result)
+	fmt.Println("Scheduler started. Will run daily at 8:00 PM.")
+	select {}
 }

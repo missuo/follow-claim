@@ -1,0 +1,8 @@
+services:
+  follow-claim:
+    container_name: follow-claim
+    image: missuo/follow-claim:latest
+    restart: unless-stopped
+    environment:
+      - COOKIE=
+      - BARK_URL=
