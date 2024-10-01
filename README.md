@@ -1,3 +1,11 @@
+[![GitHub Workflow][1]](https://github.com/missuo/follow-claim/actions)
+[![Go Version][2]](https://github.com/missuo/follow-claim/blob/main/go.mod)
+[![Docker Pulls][3]](https://hub.docker.com/r/missuo/follow-claim)
+
+[1]: https://img.shields.io/github/actions/workflow/status/missuo/follow-claim/docker.yaml?logo=github
+[2]: https://img.shields.io/github/go-mod/go-version/missuo/follow-claim?logo=go
+[3]: https://img.shields.io/docker/pulls/missuo/follow-claim?logo=docker
+
 # Follow Claim
 
 Follow Claim is a simple tool that uses a cron job to claim daily rewards from the Follow app.
