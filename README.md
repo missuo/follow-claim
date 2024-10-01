@@ -23,9 +23,11 @@ services:
     image: missuo/follow-claim:latest
     restart: unless-stopped
     environment:
+      # Cookie (Required)
       - COOKIE=
+      # Bark URL (Optional)
       - BARK_URL=
-      # Use UTC Time
+      # Use UTC Time (UTC 00:05 is 08:05 in China) (Optional, Default: 00:05)
       - SCHEDULED_TIME=00:05
 ```
 
