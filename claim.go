@@ -1,8 +1,8 @@
 /*
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:01:59
- * @LastEditors: Vincent Young
- * @LastEditTime: 2024-09-30 10:25:36
+ * @LastEditors: Vincent Yang
+ * @LastEditTime: 2024-10-08 20:41:03
  * @FilePath: /follow-claim/claim.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -67,13 +68,15 @@ func signFollow(cookie string, barkURL string, barkEnable bool) string {
 }
 
 func main() {
-	cookie := os.Getenv("COOKIE")
+	cookiesStr := os.Getenv("COOKIE")
 	barkURL := os.Getenv("BARK_URL")
 	scheduledTime := os.Getenv("SCHEDULED_TIME")
 
-	if cookie == "" {
+	if cookiesStr == "" {
 		log.Fatal("COOKIE must be set in environment variables")
 	}
+
+	cookies := strings.Split(cookiesStr, ",")
 
 	if scheduledTime == "" {
 		scheduledTime = "00:05"
@@ -88,14 +91,16 @@ func main() {
 
 	c := cron.New(cron.WithLocation(time.UTC))
 	_, err = c.AddFunc(fmt.Sprintf("%s %s * * *", minute, hour), func() {
-		result := signFollow(cookie, barkURL, barkEnable)
-		fmt.Println(result)
+		for i, cookie := range cookies {
+			result := signFollow(strings.TrimSpace(cookie), barkURL, barkEnable)
+			fmt.Printf("Account %d: %s\n", i+1, result)
+		}
 	})
 	if err != nil {
 		log.Fatal("Error scheduling task: ", err)
 	}
 
 	c.Start()
-	fmt.Printf("Scheduler started. Will run daily at %s:%s UTC.\n", hour, minute)
+	fmt.Printf("Scheduler started. Will run daily at %s:%s UTC for %d accounts.\n", hour, minute, len(cookies))
 	select {}
 }
