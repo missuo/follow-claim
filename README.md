@@ -31,7 +31,7 @@ services:
     image: missuo/follow-claim:latest
     restart: unless-stopped
     environment:
-      # Cookie (Required)
+      # Cookie (Support multiple cookies, separated by commas) (Required)
       - COOKIE=
       # Bark URL (Optional)
       - BARK_URL=
