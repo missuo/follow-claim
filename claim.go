@@ -2,7 +2,7 @@
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:01:59
  * @LastEditors: Vincent Yang
- * @LastEditTime: 2024-10-08 20:41:03
+ * @LastEditTime: 2024-10-08 20:48:35
  * @FilePath: /follow-claim/claim.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -76,7 +76,12 @@ func main() {
 		log.Fatal("COOKIE must be set in environment variables")
 	}
 
-	cookies := strings.Split(cookiesStr, ",")
+	var cookies []string
+	if strings.Contains(cookiesStr, ",") {
+		cookies = strings.Split(cookiesStr, ",")
+	} else {
+		cookies = []string{cookiesStr}
+	}
 
 	if scheduledTime == "" {
 		scheduledTime = "00:05"
