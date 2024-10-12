@@ -1,8 +1,8 @@
 /*
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:02:45
- * @LastEditors: Vincent Young
- * @LastEditTime: 2024-09-30 10:25:45
+ * @LastEditors: Vincent Yang
+ * @LastEditTime: 2024-10-11 23:22:26
  * @FilePath: /follow-claim/utils.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -12,7 +12,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -66,6 +69,46 @@ func sendToBark(message string, barkURL string, barkEnable bool) {
 	}
 
 	fmt.Printf("Successfully sent notification: %s\n", message)
+}
+
+// SendToTelegram sends a message to the Telegram channel
+func sendToTelegram(message string, telegramEnable bool, botToken string, chatID string) {
+	if !telegramEnable {
+		return
+	}
+
+	// Construct the Telegram Bot API URL
+	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", botToken)
+
+	// Prepare the request payload
+	payload := map[string]string{
+		"chat_id": chatID,
+		"text":    message,
+	}
+
+	// Convert payload to JSON
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("Failed to marshal JSON payload: %v\n", err)
+		return
+	}
+
+	// Send the POST request
+	resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Printf("Failed to send Telegram notification: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check the response status
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("Failed to send Telegram notification: HTTP status %d, response: %s\n", resp.StatusCode, string(body))
+		return
+	}
+
+	fmt.Printf("Successfully sent Telegram notification: %s\n", message)
 }
 
 func parseTime(timeStr string) (hour, minute string, err error) {
