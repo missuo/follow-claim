@@ -2,7 +2,7 @@
  * @Author: Vincent Yang
  * @Date: 2024-09-30 02:01:59
  * @LastEditors: Vincent Yang
- * @LastEditTime: 2024-10-08 20:48:35
+ * @LastEditTime: 2024-10-11 23:22:41
  * @FilePath: /follow-claim/claim.go
  * @Telegram: https://t.me/missuo
  * @GitHub: https://github.com/missuo
@@ -25,20 +25,22 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func signFollow(cookie string, barkURL string, barkEnable bool) string {
+func signFollow(cookie string, barkURL string, barkEnable bool, telegramEnable bool, telegramBotToken string, telegramChatID string) string {
 	url := "https://api.follow.is/wallets/transactions/claim_daily"
 	payload := map[string]string{"csrfToken": extractCSRFToken(cookie)}
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		sendToBark("Follow: Error: "+err.Error(), barkURL, barkEnable)
+		sendToTelegram("Follow: Error: "+err.Error(), telegramEnable, telegramBotToken, telegramChatID)
 		return "Follow: Error"
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		sendToBark("Error: "+err.Error(), barkURL, barkEnable)
-		return "Error"
+		sendToBark("Follow: Error: "+err.Error(), barkURL, barkEnable)
+		sendToTelegram("Follow: Error: "+err.Error(), telegramEnable, telegramBotToken, telegramChatID)
+		return "Follow: Error"
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.38(0x1800262c) NetType/4G Language/zh_CN")
@@ -50,8 +52,9 @@ func signFollow(cookie string, barkURL string, barkEnable bool) string {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		sendToBark("Error: "+err.Error(), barkURL, barkEnable)
-		return "Error"
+		sendToBark("Follow: Error: "+err.Error(), barkURL, barkEnable)
+		sendToTelegram("Follow: Error: "+err.Error(), telegramEnable, telegramBotToken, telegramChatID)
+		return "Follow: Error"
 	}
 	defer resp.Body.Close()
 
@@ -60,6 +63,7 @@ func signFollow(cookie string, barkURL string, barkEnable bool) string {
 		json.NewDecoder(resp.Body).Decode(&result)
 		message := fmt.Sprintf("Claim Points Failed: %v", result["message"])
 		sendToBark(message, barkURL, barkEnable)
+		sendToTelegram(message, telegramEnable, telegramBotToken, telegramChatID)
 		return message
 	}
 
@@ -71,6 +75,8 @@ func main() {
 	cookiesStr := os.Getenv("COOKIE")
 	barkURL := os.Getenv("BARK_URL")
 	scheduledTime := os.Getenv("SCHEDULED_TIME")
+	telegramBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	telegramChatID := os.Getenv("TELEGRAM_CHAT_ID")
 
 	if cookiesStr == "" {
 		log.Fatal("COOKIE must be set in environment variables")
@@ -93,11 +99,11 @@ func main() {
 	}
 
 	barkEnable := barkURL != ""
-
+	telegramEnable := telegramBotToken != "" && telegramChatID != ""
 	c := cron.New(cron.WithLocation(time.UTC))
 	_, err = c.AddFunc(fmt.Sprintf("%s %s * * *", minute, hour), func() {
 		for i, cookie := range cookies {
-			result := signFollow(strings.TrimSpace(cookie), barkURL, barkEnable)
+			result := signFollow(strings.TrimSpace(cookie), barkURL, barkEnable, telegramEnable, telegramBotToken, telegramChatID)
 			fmt.Printf("Account %d: %s\n", i+1, result)
 		}
 	})

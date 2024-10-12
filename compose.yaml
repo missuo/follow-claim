@@ -10,3 +10,7 @@ services:
       - BARK_URL=
       # Use UTC Time (UTC 00:05 is 08:05 in China) (Optional, Default: 00:05)
       - SCHEDULED_TIME=00:05
+      # Telegram Bot Token (Optional)
+      - TELEGRAM_BOT_TOKEN=
+      # Telegram Chat ID (Optional)
+      - TELEGRAM_CHAT_ID=
